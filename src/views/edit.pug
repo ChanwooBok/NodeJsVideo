@@ -1,0 +1,8 @@
+extends base.pug
+
+
+block content 
+    h1 Edit video
+    form(method="POST")
+        input(name="title", placeholder="video title" , value=video.title , required)
+        input(value="save"  , type="submit")

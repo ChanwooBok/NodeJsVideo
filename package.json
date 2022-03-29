@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "watching and making a video",
   "scripts": {
-    "dev": "nodemon --exec babel-node src/index.js"
+    "dev": "nodemon --exec babel-node src/server.js"
   },
   "repository": {
     "type": "git",
@@ -16,7 +16,9 @@
   },
   "homepage": "https://github.com/ChanwooBok/NodeJsVideo#readme",
   "dependencies": {
-    "express": "^4.17.3"
+    "express": "^4.17.3",
+    "morgan": "^1.10.0",
+    "pug": "^3.0.2"
   },
   "devDependencies": {
     "@babel/core": "^7.17.8",
