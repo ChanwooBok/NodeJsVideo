@@ -4,6 +4,7 @@ import { watch, getEdit, postEdit, test, getUpload, postUpload } from "../contro
 const videoRouter = express.Router();
 
 //videoRouter.get("/:id(\\d+)",trending);
+
 videoRouter.get("/:id(\\d+)", watch);
 videoRouter.route("/:id(\\d+)/edit").get(getEdit).post(postEdit);
 // videoRouter.get("/:id(\\d+)/edit", getEdit);
