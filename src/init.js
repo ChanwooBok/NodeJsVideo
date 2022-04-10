@@ -1,5 +1,7 @@
 import "./db";
 import "./models/Video";
+import "./models/User";
+
 import app from "./server";
 
 // server.js 에서 init.js 로 분리시킨 이유 : server.js는 server의 configuration , express 관련된것들만 쓰려고.
