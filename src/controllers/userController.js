@@ -2,8 +2,30 @@ import User from "../models/User";
 
 export const getJoin = (req,res)=> {res.render("join");}
 export const postJoin =  async(req,res) => {
-    console.log(req.body);
-    const { name , username ,password, email , location } = req.body;
+    
+    const { name , username ,password,password2, email , location } = req.body;
+    const pageTitle = "Join";
+    
+    if (password !== password2) {
+        return res.render("join", {
+          pageTitle,
+          errorMessage: "Password confirmation does not match.",
+        });
+      }
+
+    //const exists = await User.exists( {username , email }); // 이 경우 username,email 모두 겹치는것만 잡아낸다.
+    // 근데 우리는 username, 혹은 email 중 하나라도 중복되면 잡아내야 하므로 $or 연산자를 쓴다.
+    
+    const exists=  await User.exists( { $or : [ {username : username} , {email : email}]});
+    // $or : 인자들 중에 하나라도 true면 true 를 반환한다.
+    if(exists){
+        return res.render("join",{
+            pageTitle,
+            errorMessage: "This  username/email is already taken ",
+        });
+    }
+
+
     await User.create({
         name,
         email,
