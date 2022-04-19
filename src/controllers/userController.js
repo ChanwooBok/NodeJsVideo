@@ -48,11 +48,11 @@ export const getLogin = (req,res)=> {res.render("login" , {pageTitle:"Login"});}
 
 export const postLogin = async(req,res) => {
     const {username , password } = req.body;
-
+    const pageTitle = "login";
     const user = await User.findOne( { username  : username });
     if(!user){
         return res.status(400).render("login" , {
-            pageTitle : "login",
+            pageTitle,
             errorMessage : "this username / password is not right ",
         })
     }
@@ -63,8 +63,29 @@ export const postLogin = async(req,res) => {
             errorMessage: "Wrong password",
         })
     }
+
+    req.session.loggedIn = true;
+    req.session.user = user;
     res.redirect("/");
 }
+
+export const startGithubLogin = (req,res) => {
+
+    const baseUrl = "https://github.com/login/oauth/authorize"
+    const config = {
+        client_id : "529095859ac086ef6fbd",
+        allow_signup : false,
+        scope: "read:user user:email"
+    };
+    const params = new URLSearchParams(config).toString();
+    const finalUrl = `${baseUrl}?${params}`;
+
+    return res.redirect(finalUrl);
+}
+
+export const finishGithubLogin = (req,res) => {
+
+};
 
 export const logout = (req,res)=> {res.send("logout");}
 export const see = (req,res)=> {res.send("see user");}
