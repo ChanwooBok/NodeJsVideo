@@ -43,7 +43,12 @@ export const postJoin =  async(req,res) => {
           });
     }
 }
-export const edit=  (req,res)=> {res.send("edit");}
+export const getEdit=  (req,res)=> {
+    res.render("edit-profile" , {pageTitle : "Edit profile"})
+}
+export const postEdit = (req,res) =>{
+    res.send("edit");
+}
 export const remove = (req,res)=> {res.send("remove");}
 export const getLogin = (req,res)=> {res.render("login" , {pageTitle:"Login"});}
 
