@@ -7,6 +7,7 @@ export const localMiddleware = (req,res,next) => {
     next();
 }
 
+// 로그인 되어있는 유저만 접근 할 수 있는 페이지를 설정하기 위함.
 export const protectorMiddleware = (req,res,next) => {
     if(req.session.loggedIn){
         next();

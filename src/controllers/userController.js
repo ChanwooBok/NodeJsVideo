@@ -1,6 +1,7 @@
 import User from "../models/User";
 import fetch from "node-fetch";
 import bcrypt from "bcrypt";
+import e from "express";
 
 export const getJoin = (req,res)=> {res.render("join");}
 export const postJoin =  async(req,res) => {
@@ -46,8 +47,37 @@ export const postJoin =  async(req,res) => {
 export const getEdit=  (req,res)=> {
     res.render("edit-profile" , {pageTitle : "Edit profile"})
 }
-export const postEdit = (req,res) =>{
-    res.send("edit");
+export const postEdit = async(req,res) =>{
+    const {
+        session : {
+            user: {_id},
+        },
+        body : { name,username,location, email},
+        } = req;
+    
+    // session의 username, email 과 정보가 같다면 중복체크해야한다.
+    const findUsername =  await User.findOne({username});
+    const findEmail = await User.findOne({email});
+
+    // 현재 세션에 저장된 _id와 일치하지 않는다는건 다른유저가 이미 username,email을 쓰고있다는뜻이다. 
+    if(findUsername._id != _id || findEmail._id != _id){
+        return res.render("edit-profile" , {
+            pageTitle : "Edit profile",
+            errorMessage:"this username / email is already taken",
+        });
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(_id , {
+        name ,  
+        email,
+        username ,
+        location,
+    } , {new : true}  // findByIdAndUpdate의 기본값은 업뎃되지 않은 기존의 user를 가져온다 따라서, 
+    // 새롭게 업뎃한 값을 가져오기 위해서 해당 속성을 준다. 
+    );
+    req.session.user = updatedUser; // db뿐 아니라 ,세션의 user도 업데이트해주어야 pug에 나타나는 값도 바뀐다.
+
+    return res.render("edit-profile");
 }
 export const remove = (req,res)=> {res.send("remove");}
 export const getLogin = (req,res)=> {res.render("login" , {pageTitle:"Login"});}
@@ -163,6 +193,56 @@ export const logout = (req,res)=> {
     req.session.destroy();
     return res.redirect("/");
 };
+
+export const getChangePassword = (req,res) => {
+    if(req.session.user.socialOnly){
+        return res.redirect("/");
+    }// 소셜계정으로 로그인 한 유저는 비밀번호가 없음.
+    return res.render("users/change-password", {
+        pageTitle :"Change password"
+    },);
+}
+
+export const postChangePassword = async(req,res) => {
+    
+    const {
+        user:{_id}
+    } =  req.session;
+    const {oldPassword, newPassword , newPasswordConfirmation } = req.body;
+
+    
+    const user = await User.findById(_id);
+    const ok = await bcrypt.compare(oldPassword , user.password);
+
+    if(!ok){
+        return res.render("change-password", {
+            pageTitle:"change password",
+            errorMessage: "password is not correct"
+        });
+    }
+
+    //새로운 비밀번호 재확인 일치여부.
+    if(newPassword !=newPasswordConfirmation){
+        return res.status(400).render("users/change-password", {
+            pageTitle : "change password" ,
+            errorMessage:"password doesn't match confirmation"
+        });
+    }
+    
+    //update password
+    user.password = newPassword;
+    await user.save(); // save()작업을 해주어야 save() middleware가 작동해서 비밀번호를 해시처리한다.
+    return res.redirect("/users/logout"); // 
+
+    
+    
+
+    
+    //middleware를 실행해서 hash 시키려면 save() 함수를 실행해줘야 한다.
+    user.save(); // middleware가 실행되서 비밀번호에 hash처리가 될 것이다. 
+    return res.redirect("/users/logout");
+
+}
 export const see = (req,res)=> {res.send("see user");}
 
 export const home = (req,res)=>{res.render("home" , { video })}
