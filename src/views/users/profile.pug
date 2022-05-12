@@ -1,0 +1,10 @@
+extends ../base
+include ../mixins/video
+
+block content
+    
+    each potato in user.videos
+        +video(potato) 
+        //- video()는 mixin에서 형태를 가져다쓴것. 
+    else
+        li sorry Nothing Found

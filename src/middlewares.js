@@ -1,3 +1,6 @@
+import multer from "multer";
+
+
 export const localMiddleware = (req,res,next) => {
     
     res.locals.loggedIn = Boolean(req.session.loggedIn);
@@ -24,3 +27,17 @@ export const publicOnlyMiddleware = (req,res,next) => {
     }
 }
 
+export const avatarUpload = multer({
+    dest: "uploads/avatars/",
+    limits: {
+      fileSize: 3000000,
+    },
+  });
+// 사용자가 저장한 프로필 사진 파일을 uplaods/avatar라는 폴더에 저장하도록 하는 미들웨어.
+
+export const videoUpload = multer({
+    dest: "uploads/videos/",
+    limits: {
+      fileSize: 1000000000,
+    },
+  });

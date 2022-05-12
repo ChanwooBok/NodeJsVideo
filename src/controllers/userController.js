@@ -1,7 +1,7 @@
 import User from "../models/User";
+import Video from "../models/Video";
 import fetch from "node-fetch";
 import bcrypt from "bcrypt";
-import e from "express";
 
 export const getJoin = (req,res)=> {res.render("join");}
 export const postJoin =  async(req,res) => {
@@ -50,9 +50,10 @@ export const getEdit=  (req,res)=> {
 export const postEdit = async(req,res) =>{
     const {
         session : {
-            user: {_id},
+            user: {_id, avatarUrl},
         },
         body : { name,username,location, email},
+        file,   // const file = req.file;  ---> multer가 제공함. ( middleware로 dest를 지정해서 파일을 저장)
         } = req;
     
     // session의 username, email 과 정보가 같다면 중복체크해야한다.
@@ -68,6 +69,7 @@ export const postEdit = async(req,res) =>{
     }
 
     const updatedUser = await User.findByIdAndUpdate(_id , {
+        avatarUrl : file ? file.path : avatarUrl,
         name ,  
         email,
         username ,
@@ -211,8 +213,9 @@ export const postChangePassword = async(req,res) => {
     const {oldPassword, newPassword , newPasswordConfirmation } = req.body;
 
     
-    const user = await User.findById(_id);
-    const ok = await bcrypt.compare(oldPassword , user.password);
+    const user = await User.findById(_id); // user를 찾아놓아야함.
+    const ok = await bcrypt.compare(oldPassword , user.password); // 현재 비밀번호 일치 여부 확인
+    // 세션에도 password가 있으나 이는 일일이 비번변경시 세션비번도 업뎃해줘야하는 번거로움이 존재한다.
 
     if(!ok){
         return res.render("change-password", {
@@ -231,18 +234,33 @@ export const postChangePassword = async(req,res) => {
     
     //update password
     user.password = newPassword;
-    await user.save(); // save()작업을 해주어야 save() middleware가 작동해서 비밀번호를 해시처리한다.
+    await user.save(); // save()작업을 해주어야 save() middleware가  작동해서 비밀번호를 해시처리한다.
     return res.redirect("/users/logout"); // 
 
-    
-    
-
-    
     //middleware를 실행해서 hash 시키려면 save() 함수를 실행해줘야 한다.
     user.save(); // middleware가 실행되서 비밀번호에 hash처리가 될 것이다. 
     return res.redirect("/users/logout");
 
-}
-export const see = (req,res)=> {res.send("see user");}
+} 
+export const see = async(req,res)=> {
+
+    const {id} = req.params;
+    //const user=  await User.findById(id);
+    const user = await User.findById(id).populate("videos");
+    console.log(user);
+    if(!user){
+        return res.status(404).render("404", {pageTitle : "User Not found"});
+    }
+    //const videos = await Video.find( {owner  : user._id}); // video의 속성 중 owner가 _id인 video만 찾아온다.
+    
+    
+    return res.render("users/profile", {
+        pageTitle : user.name,
+        user,
+        
+    }) 
+};
+
+
 
 export const home = (req,res)=>{res.render("home" , { video })}

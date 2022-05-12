@@ -1,5 +1,5 @@
 import Video from "../models/Video";
-
+import User from "../models/User";
  // callback function : 해당 함수를 제일 마지막에 실행시키도록 해준다. ( 코드의 가독성 떨어진다.) 
   // promise : async await  를 이용해서 javascript 가 await코드를 기다려준다. 순서대로 코드작동 ( 코드의 가독성 굿)
   
@@ -28,12 +28,17 @@ export const home = async(req,res) => {
 }
 
 export const watch = async(req, res) => {
-  const { id } = req.params; // const id = req.param.id
-  const video = await Video.findById(id);
+  const { id } = req.params; // const id = req.param.id : video를 올릴 사람의 id
+  
+  //const video = await Video.findById(id);
+  //const owner = await User.findById(video.owner); // video에 user의 _id를 owner로 저장함으로써 쉽게 owner를 찾을 수 있다.
+  const video = await Video.findById(id).populate("owner");
+  
+
   if(!video){
     return res.status(404).render("404", {pageTitle: "Video Not Found"});
   }
-  return res.render("watch", { pageTitle: `Watching hell yeah ` , video });
+  return res.render("watch", { pageTitle: video.title , video  }); // owner를 pug template에 보내서 쓸 수 있도록 한다.
 };
  
 export const getEdit = async(req,res)=> {
@@ -61,16 +66,26 @@ export const postEdit  = async(req,res)=>{
 };
 
 export const getUpload = (req,res)=>{
+
   return res.render("upload" , {pageTitle : "Upload Video" });
 }
 export const postUpload = async(req,res)=> {
+  const {
+    user:{_id},
+  }  = req.session; 
+  const { path: fileUrl }  = req.file;
   const {title , description , hashtags } = req.body;
  try{
-   await Video.create( {
+   const newVideo = await Video.create( {
     title , 
     description , 
+    fileUrl,
+    owner:_id,
     hashtags  : Video.formatHashtags(hashtags),
   });
+  const user = await User.findById(_id);
+  user.videos.push(newVideo._id);
+  user.save(); // 이렇게 user.save()하면 문제점 : 매번 비디오 올릴때마다 password hashing middleware가 발동해서 유저가 로그인을 실패하게된다.
  }catch(error){
     return res.status(404).render("upload", {
       pageTitle : "Upload Video",
