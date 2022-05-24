@@ -253,7 +253,7 @@ export const see = async(req,res)=> {
     }
     //const videos = await Video.find( {owner  : user._id}); // video의 속성 중 owner가 _id인 video만 찾아온다.
     
-    
+      
     return res.render("users/profile", {
         pageTitle : user.name,
         user,

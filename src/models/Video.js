@@ -15,7 +15,7 @@ const videoSchema = new mongoose.Schema({
         rating: { type : Number , default : 0 , required : true },
     },
     owner:{type:mongoose.Schema.Types.ObjectId , required : true, ref:"User"}, 
-    // ref를 꼭 써주어야 한다. 그래야 , User의 _id를 가져다가 owner에 저장 할 것이라는것을 mongoose에게 알려 줄 수 있다.
+    // ref를 꼭 써주어야 한다. 그래야 ,_id가 User에서 온 것이란것을 mongoose에게 알려 줄 수 있다.
 });
 
 
@@ -26,6 +26,8 @@ const videoSchema = new mongoose.Schema({
 //             .map( (word) => (word.startsWith("#") ? word : `#${word}`));
 //   });
 
+// 
+  
 /* static을 이용하여 video function을 만드는 방법  */
 videoSchema.static("formatHashtags", function( hashtags ){
     return hashtags

@@ -28,35 +28,56 @@ export const home = async(req,res) => {
 }
 
 export const watch = async(req, res) => {
+
   const { id } = req.params; // const id = req.param.id : video를 올릴 사람의 id
   
   //const video = await Video.findById(id);
   //const owner = await User.findById(video.owner); // video에 user의 _id를 owner로 저장함으로써 쉽게 owner를 찾을 수 있다.
   const video = await Video.findById(id).populate("owner");
-  
 
   if(!video){
     return res.status(404).render("404", {pageTitle: "Video Not Found"});
   }
+  
   return res.render("watch", { pageTitle: video.title , video  }); // owner를 pug template에 보내서 쓸 수 있도록 한다.
 };
  
 export const getEdit = async(req,res)=> {
+  const {
+    user:{ _id }
+  } = req.session;
+
   const { id } = req.params;
   const video = await Video.findById(id);
   if(!video){
     return res.render("404", {pageTitle: "Video Not Found"});
   }
+
+  // 비록 template에서 owner가 아니면 edit ,delete 버튼이 보이지 않도록 링크를 숨겼으나, 백엔드에서도 반드시 보호처리를 해야한다.
+  if((String)(video.owner._id) !== (String)(_id)){ // typeof()로 검사해보면 각 object , string으로 타입이 달라 항상 다르다고 나오므로 통일시켜주기.
+    return res.status(403).redirect("/"); // 403 : 권한x
+  }
+
   return res.render("edit", { pageTitle: `Edit: ${video.title}`, video });
 };
 
 export const postEdit  = async(req,res)=>{
+  const {
+    user:{_id},
+  } = req.session;
+
   const { id } = req.params;
   const { title,description , hashtags } = req.body;
   const video = await Video.exists( { _id : id });
   if(!video){
     return res.status(404).render("404", {pageTitle: "Video Not Found"});
   }
+
+  // 비록 template에서 owner가 아니면 edit ,delete 버튼이 보이지 않도록 링크를 숨겼으나, 백엔드에서도 반드시 보호처리를 해야한다.
+  if((String)(video.owner._id) !== (String)(_id)){
+    return res.status(403).redirect("/"); // 403 : 권한x
+  }
+
   await Video.findByIdAndUpdate(id, {
     title,
     description,
@@ -98,7 +119,20 @@ export const postUpload = async(req,res)=> {
 
 
 export const deleteVideo = async (req, res) => {
+  const {
+    user:{_id},
+  } = req.session;
+
   const { id } = req.params;
+  
+  const video = await Video.findById(id);
+  if(!video){
+    return res.status(400).render("404",{pageTitle : "Video not Found"});
+  }
+  if((String)(video.owner._id) !== (String)(_id)){
+    return res.status(403).redirect("/");
+  }
+  
   await Video.findByIdAndDelete(id);
   return res.redirect("/");
 };
