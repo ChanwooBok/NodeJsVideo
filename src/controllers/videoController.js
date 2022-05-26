@@ -105,9 +105,10 @@ export const postUpload = async(req,res)=> {
     hashtags  : Video.formatHashtags(hashtags),
   });
   const user = await User.findById(_id);
-  user.videos.push(newVideo._id);
+  user.videos.push(newVideo._id); // 한명의 user는 여러개의 video를 가질 수 있다. 업로드할때마다 이렇게 추가해준다.
   user.save(); // 이렇게 user.save()하면 문제점 : 매번 비디오 올릴때마다 password hashing middleware가 발동해서 유저가 로그인을 실패하게된다.
- }catch(error){
+  //-> 버그 해결책 : password가 변경되었을때만 middleware가 작동하도록 수정한다. 
+ }catch(error){ 
     return res.status(404).render("upload", {
       pageTitle : "Upload Video",
       errorMessage : error._message,
