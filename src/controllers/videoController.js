@@ -17,6 +17,8 @@ import User from "../models/User";
 // };
 
 
+
+
 //promise 방식 ( 코드가 순서대로 실행되서 가독성이 좋다 . )
 export const home = async(req,res) => {
   try{
@@ -33,50 +35,56 @@ export const watch = async(req, res) => {
   
   //const video = await Video.findById(id);
   //const owner = await User.findById(video.owner); // video에 user의 _id를 owner로 저장함으로써 쉽게 owner를 찾을 수 있다.
-  const video = await Video.findById(id).populate("owner");
+  //const video = await Video.findById(id).populate("owner");
+  const video = await Video.findById(id);
 
   if(!video){
     return res.status(404).render("404", {pageTitle: "Video Not Found"});
   }
-  
   return res.render("watch", { pageTitle: video.title , video  }); // owner를 pug template에 보내서 쓸 수 있도록 한다.
 };
  
 export const getEdit = async(req,res)=> {
-  const {
-    user:{ _id }
-  } = req.session;
+  // const {
+  //   user:{ _id }
+  // } = req.session;
 
-  const { id } = req.params;
-  const video = await Video.findById(id);
+  const { id } = req.params; // watch.pug에서 edit누를때 video.id로 비디오의 id를 인자로 보내준다.
+  const video = await Video.findById(id); //video object가 필요하므로, mongoose의 기능인 findById를 써준다. exists쓰면 안된다. 
   if(!video){
     return res.render("404", {pageTitle: "Video Not Found"});
-  }
+  }//만약,url로 온 id로 비디오를 찾았는데 없다면 무한로딩되므로,  if문으로 에러처리를 해준다.
 
   // 비록 template에서 owner가 아니면 edit ,delete 버튼이 보이지 않도록 링크를 숨겼으나, 백엔드에서도 반드시 보호처리를 해야한다.
+  /*
   if((String)(video.owner._id) !== (String)(_id)){ // typeof()로 검사해보면 각 object , string으로 타입이 달라 항상 다르다고 나오므로 통일시켜주기.
     return res.status(403).redirect("/"); // 403 : 권한x
   }
+  */
 
   return res.render("edit", { pageTitle: `Edit: ${video.title}`, video });
 };
 
 export const postEdit  = async(req,res)=>{
-  const {
-    user:{_id},
-  } = req.session;
+  // const {
+  //   user:{_id},
+  // } = req.session;
 
   const { id } = req.params;
   const { title,description , hashtags } = req.body;
+
+  //exists( __ : __ ) 는 true ,false 의 불리언값을 전달한다. 여기선 비디오가 존재하는지만 체크하는거니까(에러방지용) video object는 필요없어서 exists로
+  //간단하게 체크해준다. exist()는 filter를 필요로 하며 any propeties of video can be filter
   const video = await Video.exists( { _id : id });
+  console.log(id+"는 비디오 고유 아이디입니다.");
   if(!video){
     return res.status(404).render("404", {pageTitle: "Video Not Found"});
   }
 
   // 비록 template에서 owner가 아니면 edit ,delete 버튼이 보이지 않도록 링크를 숨겼으나, 백엔드에서도 반드시 보호처리를 해야한다.
-  if((String)(video.owner._id) !== (String)(_id)){
-    return res.status(403).redirect("/"); // 403 : 권한x
-  }
+  // if((String)(video.owner._id) !== (String)(_id)){
+  //   return res.status(403).redirect("/"); // 403 : 권한x
+  // }
 
   await Video.findByIdAndUpdate(id, {
     title,
@@ -91,30 +99,30 @@ export const getUpload = (req,res)=>{
   return res.render("upload" , {pageTitle : "Upload Video" });
 }
 export const postUpload = async(req,res)=> {
-  const {
-    user:{_id},
-  }  = req.session; 
-  const { path: fileUrl }  = req.file;
-  const {title , description , hashtags } = req.body;
- try{
-   const newVideo = await Video.create( {
-    title , 
-    description , 
-    fileUrl,
-    owner:_id,
-    hashtags  : Video.formatHashtags(hashtags),
+  // const {
+  //   user:{_id},
+  // }  = req.session; 
+  //const { path: fileUrl }  = req.file;
+  const {title,description,hashtags} = req.body;
+  // await에서는 에러가 나면 자바스크립트는 멈춰버린다. 따라서 에러를 대비해서 try~catch문을 써준다. 
+  
+  await Video.create({
+    title,
+    description,
+    hashtags:hashtags.split(",").map((word) => `#${word}`),
+    meta:{
+      views: 0,
+      rating: 0,
+    },
   });
+
+  /*
   const user = await User.findById(_id);
   user.videos.push(newVideo._id); // 한명의 user는 여러개의 video를 가질 수 있다. 업로드할때마다 이렇게 추가해준다.
   user.save(); // 이렇게 user.save()하면 문제점 : 매번 비디오 올릴때마다 password hashing middleware가 발동해서 유저가 로그인을 실패하게된다.
   //-> 버그 해결책 : password가 변경되었을때만 middleware가 작동하도록 수정한다. 
- }catch(error){ 
-    return res.status(404).render("upload", {
-      pageTitle : "Upload Video",
-      errorMessage : error._message,
-    })
- }
-  
+  */
+
   return res.redirect("/");
 }
 

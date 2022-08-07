@@ -101,7 +101,7 @@ export const postLogin = async(req,res) => {
             errorMessage: "Wrong password",
         })
     }
-
+    
     req.session.loggedIn = true;
     req.session.user = user;
     res.redirect("/");
@@ -246,7 +246,7 @@ export const see = async(req,res)=> {
 
     const {id} = req.params;
     //const user=  await User.findById(id);
-    const user = await User.findById(id).populate("videos");
+    //const user = await User.findById(id).populate("videos");
     //user schema에는 videos라는 항목이 있는데 이것은 ref: Video로 지정해줘서 Video schema에 연동된것을 노드가 몽구스가 알고 있다.
     // 따라서 populate를 해주면 해당 video를 연동해서 상세한 값들을 가져온다. ( title , fielUrl,  description...etc)
     if(!user){

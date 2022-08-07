@@ -27,14 +27,22 @@ app.use(express.urlencoded({ extended : true }));
 app.use( 
     session( {
         secret: process.env.COOKIE_SECRET,
-        resave:false,
+        resave:false, // 방문하는 모든 유저에게 쿠키를 주지 않음 ( 기억하고 싶은 유저에게만 줄 것)
         saveUninitialized:false,
         store:MongoStore.create( { mongoUrl : process.env.DB_URL})
     })
 );
 
+app.use((req,res,next) => {
+    req.sessionStore.all((error,sessions) => {
+        console.log(sessions);
+        console.log("Hi chanwoo");
+        next();
+    });
+});
 
-app.use(localMiddleware);
+
+//app.use(localMiddleware);
 app.use("/uploads", express.static("uploads")); // 브라우저에게 노출시킬 폴더 이름을 적어주면 된다. 안 그러면 폴더를 열어보지 못함.-> 아바타이미지가 안 나옴.
 app.use("/static", express.static("assets"));
 app.use("/",rootRouter);
