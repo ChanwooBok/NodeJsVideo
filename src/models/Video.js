@@ -20,23 +20,32 @@ const videoSchema = new mongoose.Schema({
 });
 
 
- /* pre.save 미들웨어를 이용한 방법 */
-// videoSchema.pre("save" , async function(){
-//     this.hashtags = this.hashtags[0]
-//             .split(",")
-//             .map( (word) => (word.startsWith("#") ? word : `#${word}`));
-//   });
-
-// 
-  
-/* static을 이용하여 video function을 만드는 방법  */
-videoSchema.static("formatHashtags", function( hashtags ){
-    return hashtags
+ /* 1번째 시도 : pre.save 미들웨어를 이용한 방법 */
+ /* 비디오를 새롭게 업로드할때도(save), 업데이트할때에도(update) videoSchema.pre("save") , videoSchema("update") 일일이 반복하기 귀찮음 */
+videoSchema.pre("save" , async function(){
+    this.hashtags = this.hashtags[0]
             .split(",")
             .map( (word) => (word.startsWith("#") ? word : `#${word}`));
-});
+  });
+// 
+
+/* 2번째 시도 : function으로 만들어서 가져다 쓰는방법 */
+/* postupload, postedit등 두가지 모두에 반복적으로 써야 해서 반복이 귀찮다. */
+// export const formatHashtag = (hashtags) => {
+//     hashtags
+//         .split(",")
+//         .map( (word) => (word.startsWith("#") ? word : `#${word}`));
+// };
 
 
+/* 최종 방법 : static을 이용하여 video function을 만드는 방법  */
+videoSchema.static("formatHashtags", function(hashtags) {
+    return hashtags
+        .split(",")
+        .map((word) => (word.startsWith("#") ? word : `#${word}`));
+} )
+
+//middleware는 mongoose모델이 만들어지기 전에 생성해야 한다.
 const Video = mongoose.model("Video",videoSchema);
 
 export default Video;

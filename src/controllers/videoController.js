@@ -1,5 +1,6 @@
 import Video from "../models/Video";
 import User from "../models/User";
+import { reset } from 'nodemon';
  // callback function : 해당 함수를 제일 마지막에 실행시키도록 해준다. ( 코드의 가독성 떨어진다.) 
   // promise : async await  를 이용해서 javascript 가 await코드를 기다려준다. 순서대로 코드작동 ( 코드의 가독성 굿)
   
@@ -19,7 +20,7 @@ import User from "../models/User";
 
 
 
-//promise 방식 ( 코드가 순서대로 실행되서 가독성이 좋다 . )
+// promise 방식 ( 코드가 순서대로 실행되서 가독성이 좋다 . )
 export const home = async(req,res) => {
   try{
     const videos = await Video.find( {}).sort({createdAt : "desc" });
@@ -28,6 +29,16 @@ export const home = async(req,res) => {
     return res.render("server-error");
   }
 }
+
+// export const home = (req,res) => {
+//   console.log("first");
+//   Video.find({}, (error,videos)=>{
+//     if(error){
+//       return res.render(f"server-error");
+//     }
+//     return res.render("home",{pageTitle:"Home",videos});
+//   });
+// }
 
 export const watch = async(req, res) => {
 
@@ -86,6 +97,7 @@ export const postEdit  = async(req,res)=>{
   //   return res.status(403).redirect("/"); // 403 : 권한x
   // }
 
+  //mongoose의 기능중 하나인 findByIdAndUpdate를 이용한다.
   await Video.findByIdAndUpdate(id, {
     title,
     description,
@@ -106,15 +118,23 @@ export const postUpload = async(req,res)=> {
   const {title,description,hashtags} = req.body;
   // await에서는 에러가 나면 자바스크립트는 멈춰버린다. 따라서 에러를 대비해서 try~catch문을 써준다. 
   
-  await Video.create({
-    title,
-    description,
-    hashtags:hashtags.split(",").map((word) => `#${word}`),
-    meta:{
-      views: 0,
-      rating: 0,
-    },
-  });
+  try{
+    await Video.create({
+      title,
+      description,
+      hashtags: Video.formatHashtags(hashtags),
+      meta:{
+        views: 0,
+        rating: 0,
+      },
+    });
+    return res.redirect("/");
+  }catch(error){
+    return res.render("upload",{
+      pageTitle:"Upload video",
+      errorMessage:error._message,
+    });
+  }
 
   /*
   const user = await User.findById(_id);
@@ -122,26 +142,20 @@ export const postUpload = async(req,res)=> {
   user.save(); // 이렇게 user.save()하면 문제점 : 매번 비디오 올릴때마다 password hashing middleware가 발동해서 유저가 로그인을 실패하게된다.
   //-> 버그 해결책 : password가 변경되었을때만 middleware가 작동하도록 수정한다. 
   */
-
-  return res.redirect("/");
 }
 
 
 export const deleteVideo = async (req, res) => {
-  const {
-    user:{_id},
-  } = req.session;
+  // const {
+  //   user:{_id},
+  // } = req.session;
 
   const { id } = req.params;
-  
+
   const video = await Video.findById(id);
   if(!video){
     return res.status(400).render("404",{pageTitle : "Video not Found"});
   }
-  if((String)(video.owner._id) !== (String)(_id)){
-    return res.status(403).redirect("/");
-  }
-  
   await Video.findByIdAndDelete(id);
   return res.redirect("/");
 };
@@ -149,11 +163,11 @@ export const deleteVideo = async (req, res) => {
 
 export const search = async(req,res) => {
   const { keyword } = req.query;
-  let videos = [];
-  if(keyword){
-    videos = await Video.find({
+  let videos = []; // 전역변수로 써먹기 위해 let으로 하고 빈 배열을 만들어준다. video를 찾을경우 수정될것이고 아닐경우 그대로 빈 배열일것.
+  if(keyword){ // 우리가 검색한 단어 Keyword가 존재한다면 실행.
+    videos = await Video.find({ 
       title: {
-        $regex: new RegExp(`^${keyword}`, "i"),
+        $regex: new RegExp(`${keyword}$`, "i"), // ^xxx : xxx로 시작하는 단어 찾는다. // xxx$ : xxx로 끝나는 단어를 찾는다. // "i": 대소문자 구별 ignore
       },
     })
   }

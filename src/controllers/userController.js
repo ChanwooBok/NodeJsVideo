@@ -14,7 +14,7 @@ export const postJoin =  async(req,res) => {
           pageTitle,
           errorMessage: "Password confirmation does not match.",
         });
-      }
+      } 
 
     //const exists = await User.exists( {username , email }); // 이 경우 username,email 모두 겹치는것만 잡아낸다.
     // 근데 우리는 username, 혹은 email 중 하나라도 중복되면 잡아내야 하므로 $or 연산자를 쓴다.
@@ -87,6 +87,7 @@ export const getLogin = (req,res)=> {res.render("login" , {pageTitle:"Login"});}
 export const postLogin = async(req,res) => {
     const {username , password } = req.body;
     const pageTitle = "login";
+    //ID체크
     const user = await User.findOne( { username  : username  , socialOnly : false});
     if(!user){
         return res.status(400).render("login" , {
@@ -94,6 +95,7 @@ export const postLogin = async(req,res) => {
             errorMessage : "this username / password is not right ",
         })
     }
+    //password체크
     const ok = await bcrypt.compare(password, user.password);
     if(!ok){
         return res.status(400).render("login",{
