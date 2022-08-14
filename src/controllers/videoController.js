@@ -117,7 +117,7 @@ export const postUpload = async(req,res)=> {
   //const { path: fileUrl }  = req.file;
   const {title,description,hashtags} = req.body;
   // await에서는 에러가 나면 자바스크립트는 멈춰버린다. 따라서 에러를 대비해서 try~catch문을 써준다. 
-  
+  console.log(req.file);
   try{
     await Video.create({
       title,
