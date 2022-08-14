@@ -45,20 +45,19 @@ export const watch = async(req, res) => {
   const { id } = req.params; // const id = req.param.id : video를 올릴 사람의 id
   
   //const video = await Video.findById(id);
-  //const owner = await User.findById(video.owner); // video에 user의 _id를 owner로 저장함으로써 쉽게 owner를 찾을 수 있다.
-  //const video = await Video.findById(id).populate("owner");
-  const video = await Video.findById(id);
-
+  //const video = await Video.findById(id);
+  //const user = await User.findById(id); // video에 user의 _id를 owner로 저장함으로써 쉽게 owner를 찾을 수 있다.
+  const video = await Video.findById(id).populate("owner");  // 몽구스가 owner의 _id가 schema모델 User와 ref된것을 알고 알아서 _id로 된 user의 정보까지 싸그리 가져온다.
   if(!video){
     return res.status(404).render("404", {pageTitle: "Video Not Found"});
   }
-  return res.render("watch", { pageTitle: video.title , video  }); // owner를 pug template에 보내서 쓸 수 있도록 한다.
+  return res.render("watch", { pageTitle: video.title ,video }); // owner를 pug template에 보내서 쓸 수 있도록 한다.
 };
  
 export const getEdit = async(req,res)=> {
-  // const {
-  //   user:{ _id }
-  // } = req.session;
+  const {
+      session : { 
+        user : {_id},},} = req;
 
   const { id } = req.params; // watch.pug에서 edit누를때 video.id로 비디오의 id를 인자로 보내준다.
   const video = await Video.findById(id); //video object가 필요하므로, mongoose의 기능인 findById를 써준다. exists쓰면 안된다. 
@@ -66,20 +65,18 @@ export const getEdit = async(req,res)=> {
     return res.render("404", {pageTitle: "Video Not Found"});
   }//만약,url로 온 id로 비디오를 찾았는데 없다면 무한로딩되므로,  if문으로 에러처리를 해준다.
 
-  // 비록 template에서 owner가 아니면 edit ,delete 버튼이 보이지 않도록 링크를 숨겼으나, 백엔드에서도 반드시 보호처리를 해야한다.
-  /*
-  if((String)(video.owner._id) !== (String)(_id)){ // typeof()로 검사해보면 각 object , string으로 타입이 달라 항상 다르다고 나오므로 통일시켜주기.
+  // 비록 template에서 owner가 아니면 edit ,delete 버튼이 보이지 않도록 링크를 숨겼으나, 백엔드에서도 반드시 보호처리를 해야한다. (비디오의 주인이 아니면 수정 할 수 없게끔)
+  if((String)(video.owner) !== (String)(_id)){ // typeof()로 검사해보면 각 object , string으로 타입이 달라 항상 다르다고 나오므로 통일시켜주기.
     return res.status(403).redirect("/"); // 403 : 권한x
   }
-  */
 
   return res.render("edit", { pageTitle: `Edit: ${video.title}`, video });
 };
 
 export const postEdit  = async(req,res)=>{
-  // const {
-  //   user:{_id},
-  // } = req.session;
+  const {
+    user:{_id},
+  } = req.session;
 
   const { id } = req.params;
   const { title,description , hashtags } = req.body;
@@ -92,10 +89,10 @@ export const postEdit  = async(req,res)=>{
     return res.status(404).render("404", {pageTitle: "Video Not Found"});
   }
 
-  // 비록 template에서 owner가 아니면 edit ,delete 버튼이 보이지 않도록 링크를 숨겼으나, 백엔드에서도 반드시 보호처리를 해야한다.
-  // if((String)(video.owner._id) !== (String)(_id)){
-  //   return res.status(403).redirect("/"); // 403 : 권한x
-  // }
+  //비록 template에서 owner가 아니면 edit ,delete 버튼이 보이지 않도록 링크를 숨겼으나, 백엔드에서도 반드시 보호처리를 해야한다.
+  if((String)(video.owner) !== (String)(_id)){
+    return res.status(403).redirect("/"); // 403 : 권한x
+  }
 
   //mongoose의 기능중 하나인 findByIdAndUpdate를 이용한다.
   await Video.findByIdAndUpdate(id, {
@@ -111,44 +108,38 @@ export const getUpload = (req,res)=>{
   return res.render("upload" , {pageTitle : "Upload Video" });
 }
 export const postUpload = async(req,res)=> {
-  // const {
-  //   user:{_id},
-  // }  = req.session; 
-  //const { path: fileUrl }  = req.file;
+  
+  const { 
+      session : {
+        user: {_id}}
+       } = req;
+  const { path: fileUrl }  = req.file; // multer는 req.file을 제공해주는데 file에는 path가 있다.
   const {title,description,hashtags} = req.body;
-  // await에서는 에러가 나면 자바스크립트는 멈춰버린다. 따라서 에러를 대비해서 try~catch문을 써준다. 
-  console.log(req.file);
+  // await에서는 에러가 나면 자바스크립트는 멈춰버린다. 따라서 에러를 대비해서 try~catch문을 써준다.
   try{
-    await Video.create({
+    const newVideo = await Video.create({
       title,
+      fileUrl,
       description,
       hashtags: Video.formatHashtags(hashtags),
-      meta:{
-        views: 0,
-        rating: 0,
-      },
+      owner: _id, // 업로드하는 사람의 id를 등록해준다.
     });
-    return res.redirect("/");
-  }catch(error){
+      const user = await User.findById(_id);
+      user.videos.push(newVideo._id); // 한명의 user는 여러개의 video를 가질 수 있다. 업로드할때마다 이렇게 추가해준다.
+      user.save(); // 이렇게 user.save()하면 문제점 : 매번 비디오 올릴때마다 password hashing middleware가 발동해서 유저가 로그인을 실패하게된다.
+      //-> 버그 해결책 : password가 변경되었을때만 middleware가 작동하도록 수정한다. 
+      return res.redirect("/");
+    }catch(error){
     return res.render("upload",{
       pageTitle:"Upload video",
       errorMessage:error._message,
     });
   }
-
-  /*
-  const user = await User.findById(_id);
-  user.videos.push(newVideo._id); // 한명의 user는 여러개의 video를 가질 수 있다. 업로드할때마다 이렇게 추가해준다.
-  user.save(); // 이렇게 user.save()하면 문제점 : 매번 비디오 올릴때마다 password hashing middleware가 발동해서 유저가 로그인을 실패하게된다.
-  //-> 버그 해결책 : password가 변경되었을때만 middleware가 작동하도록 수정한다. 
-  */
 }
-
-
 export const deleteVideo = async (req, res) => {
-  // const {
-  //   user:{_id},
-  // } = req.session;
+  const {
+    user:{_id},
+  } = req.session;
 
   const { id } = req.params;
 
@@ -156,6 +147,9 @@ export const deleteVideo = async (req, res) => {
   if(!video){
     return res.status(400).render("404",{pageTitle : "Video not Found"});
   }
+  if((String)(video.owner) !== (String)(_id)){
+    return res.render(403);
+  } 
   await Video.findByIdAndDelete(id);
   return res.redirect("/");
 };

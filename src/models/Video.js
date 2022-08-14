@@ -7,7 +7,7 @@ import mongoose from "mongoose";
 
 const videoSchema = new mongoose.Schema({
     title: { type: String, required: true, trim: true, maxLength: 80 },
-    //fileUrl: { type: String, required: true },
+    fileUrl: { type: String, required: true },
     description: { type: String, required: true, trim: true, minLength: 20 },
     createdAt : {type : Date , required : true , default : Date.now},
     hashtags: [{ type: String, trim: true }],
@@ -15,7 +15,7 @@ const videoSchema = new mongoose.Schema({
         views: { type : Number , default : 0 , required : true},
         rating: { type : Number , default : 0 , required : true },
     },
-    //owner:{type:mongoose.Schema.Types.ObjectId , required : true, ref:"User"}, 
+    owner:{type:mongoose.Schema.Types.ObjectId , required : true, ref:"User"}, 
     // ref를 꼭 써주어야 한다. 그래야 ,_id가 User에서 온 것이란것을 mongoose에게 알려 줄 수 있다.
 });
 

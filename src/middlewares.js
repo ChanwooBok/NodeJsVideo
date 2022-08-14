@@ -27,14 +27,8 @@ export const publicOnlyMiddleware = (req,res,next) => {
     }
 }
 
-// export const avatarUpload = multer({
-//     dest: "uploads/avatars/",
-//     limits: {
-//       fileSize: 3000000,
-//     },
-//   });
-// // 사용자가 저장한 프로필 사진 파일을 uplaods/avatar라는 폴더에 저장하도록 하는 미들웨어.
 
+// // 사용자가 저장한 프로필 사진 파일을 uplaods/avatar라는 폴더에 저장하도록 하는 미들웨어.
 export const avatarUpload = multer({ dest: "uploads/avatars" });
 
 export const videoUpload = multer({

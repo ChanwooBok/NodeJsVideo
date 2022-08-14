@@ -4,8 +4,7 @@ mixin video(info)
             a(href=`/videos/${info.id}`)=info.title
         p=info.description 
         ul 
-            each hashtag in info.hashtags
-                li=hashtag
+            
         small=info.createdAt
         hr 
             

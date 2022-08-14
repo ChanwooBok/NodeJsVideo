@@ -20,7 +20,6 @@ userSchema.pre("save",async function(){
         // 따라서 password가 modified 일때만 hash처리 하도록 한다. 
         this.password = await bcrypt.hash(this.password, 5 );
     }
-    
 });
 
 
