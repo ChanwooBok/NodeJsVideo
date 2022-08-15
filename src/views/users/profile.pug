@@ -2,8 +2,11 @@ extends ../base
 include ../mixins/video
 
 block content
-    each potato in user.videos
-        +video(potato) 
-        //- video()는 mixin에서 형태를 가져다쓴것. 
-    else
-        li sorry Nothing Found
+    div.profile__data
+        img(src="/" + user.avatarUrl).avatar
+        h3=user.name
+    div.video-grid
+        each video in user.videos
+            +video(video)
+        else
+            span.empty__message No videos found 

@@ -22,12 +22,13 @@ import { reset } from 'nodemon';
 
 // promise 방식 ( 코드가 순서대로 실행되서 가독성이 좋다 . )
 export const home = async(req,res) => {
-  try{
-    const videos = await Video.find( {}).sort({createdAt : "desc" });
-    return res.render("home", { pageTitle :  "Home" , videos });
-  }catch(error){
-    return res.render("server-error");
-  }
+  
+  const videos = await Video.find( {})
+    .sort({createdAt : "desc" })
+    .populate("owner");
+  
+  return res.render("home", { pageTitle :  "Home" , videos });
+  
 }
 
 // export const home = (req,res) => {
@@ -163,7 +164,7 @@ export const search = async(req,res) => {
       title: {
         $regex: new RegExp(`${keyword}$`, "i"), // ^xxx : xxx로 시작하는 단어 찾는다. // xxx$ : xxx로 끝나는 단어를 찾는다. // "i": 대소문자 구별 ignore
       },
-    })
+    }).populate("owner");
   }
   return res.render("search", { pageTitle: "Search", videos });
 }
