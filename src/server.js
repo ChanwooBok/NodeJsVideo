@@ -35,7 +35,7 @@ app.use(
 
 app.use(localsMiddleware);
 app.use("/uploads", express.static("uploads")); // 브라우저에게 노출시킬 폴더 이름을 적어주면 된다. 안 그러면 폴더를 열어보지 못함.-> 아바타이미지가 안 나옴.
-app.use("/static", express.static("assets"));
+app.use("/static", express.static("assets")); // 서버에게 assets폴더를 열람하게끔 함.
 app.use("/",rootRouter);
 app.use("/videos",videoRouter);
 app.use("/users",userRouter);
