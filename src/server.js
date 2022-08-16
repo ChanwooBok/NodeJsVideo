@@ -8,6 +8,7 @@ import rootRouter from "./routers/rootRouter.js";
 import userRouter from "./routers/userRouter.js";
 import videoRouter from "./routers/videoRouter.js";
 import { localsMiddleware } from "./middlewares";
+import apiRouter from './routers/apiRouter';
 //const express = require("express");    옛날 문법. 바벨을 씀으로써 위와같이 쓸 수 있다.
 
 
@@ -39,5 +40,6 @@ app.use("/static", express.static("assets")); // 서버에게 assets폴더를 �
 app.use("/",rootRouter);
 app.use("/videos",videoRouter);
 app.use("/users",userRouter);
+app.use("/api",apiRouter);
 
 export default app;

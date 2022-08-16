@@ -9,7 +9,7 @@ form {
     }
   }
 
-  input {
+  input:not(input[type="range"]) {
     all: unset;
     padding: 15px 20px;
     border-radius: 5px;
@@ -23,14 +23,13 @@ form {
       color: rgba(255, 255, 255, 0.7);
     }
   }
-
-input[type="submit"],
-.social__btn {
-  border-radius: 5px;
-  padding: 12px 20px;
-  background-color: white;
-  color: rgba($color: $red, $alpha: 1);
-  text-align: center;
-  cursor: pointer;
-  display: block;
-}
+  input[type="submit"],
+  .social__btn {
+    border-radius: 5px;
+    padding: 12px 20px;
+    background-color: white;
+    color: rgba($color: $red, $alpha: 1);
+    text-align: center;
+    cursor: pointer;
+    display: block;
+  }
