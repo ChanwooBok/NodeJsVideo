@@ -6,6 +6,7 @@ module.exports = {
   entry: {
     main:"./src/client/js/main.js",
     videoPlayer:"./src/client/js/videoPlayer.js",
+    recorder:"./src/client/js/recorder.js",
     //밑에서 filename을 js/[name].js로 설정해서 name안에 각 항목이 들어간다.
   },
   mode: "development", // 개발모드

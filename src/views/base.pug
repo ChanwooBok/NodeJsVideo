@@ -10,5 +10,6 @@ html(lang="ko")
         main
             block content
         include partials/footer
+    script(src="/static/js/main.js") 
     block scripts
     //- script(src="/static/js/main.js") 대신 이렇게 쓴 이유: base.pug는 모든 페이지에 깔린다. 근데 모든페이지에 javascript코드를 실행하는건 비효율적이라서.
