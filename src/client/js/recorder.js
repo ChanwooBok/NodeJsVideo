@@ -67,40 +67,54 @@ const handleDownload = async () => {
     URL.revokeObjectURL(mp4Url);
     URL.revokeObjectURL(thumbUrl);
     URL.revokeObjectURL(videoFile);
-    
+
     actionBtn.disabled = false;
     actionBtn.innerText = "Record Again";
     actionBtn.addEventListener("click", handleStart);
 
 };
 
-const handleStop = () => {
-    actionBtn.innerText = "Download Recording";
-    actionBtn.removeEventListener("click",handleStop);
-    actionBtn.addEventListener("click", handleDownload);
-    recorder.stop();
-}
+// const handleStop = () => {
+//     actionBtn.innerText = "Download Recording";
+//     actionBtn.removeEventListener("click",handleStop);
+//     actionBtn.addEventListener("click", handleDownload);
+//     recorder.stop();
+// }
 
 const handleStart = () => {
-        actionBtn.innerText = "Download Recording";
+        
+        actionBtn.innerText = "Recording";
+        actionBtn.disabled = true;
         actionBtn.removeEventListener("click",handleStart);
-        actionBtn.addEventListener("click",handleStop);
-        recorder = new MediaRecorder(stream);
+
+        recorder = new MediaRecorder(stream, {mimeType : "video/webm"});
         recorder.ondataavailable = (event) => {
             videoFile = URL.createObjectURL(event.data);
             video.srcObject = null;
             video.src = videoFile;
             video.loop = true;
             video.play();
+            // video가 플레이된후 recorder.stop() setTimeout5초때문에 자동으로 끝나고 아래 코드가 이제 실행된다.
+            actionBtn.innerText = "Donwload";
+            actionBtn.disabled = false;
+            actionBtn.addEventListener("click", handleDownload);
         };
         recorder.start();
+
+        //Record버튼을 누르면 5초가 카운트되고 자동으로 정지한다. 그리고 97번째 코드부터 실행된다.
+        setTimeout(() => {
+            recorder.stop();
+          }, 5000); // video.play()된 후로 5초 카운트 다운
     };
 
 
 const init = async() => {
     stream = await navigator.mediaDevices.getUserMedia({
         audio: false,
-        video: true,
+        video: {
+            width: 1024,
+            height: 576,
+          },
       });
       video.srcObject = stream;
       video.play();

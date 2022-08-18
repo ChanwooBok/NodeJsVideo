@@ -68,6 +68,7 @@ export const getEdit = async(req,res)=> {
 
   // 비록 template에서 owner가 아니면 edit ,delete 버튼이 보이지 않도록 링크를 숨겼으나, 백엔드에서도 반드시 보호처리를 해야한다. (비디오의 주인이 아니면 수정 할 수 없게끔)
   if((String)(video.owner) !== (String)(_id)){ // typeof()로 검사해보면 각 object , string으로 타입이 달라 항상 다르다고 나오므로 통일시켜주기.
+    req.flash("error","Not authorized");
     return res.status(403).redirect("/"); // 403 : 권한x
   }
 
@@ -92,6 +93,7 @@ export const postEdit  = async(req,res)=>{
 
   //비록 template에서 owner가 아니면 edit ,delete 버튼이 보이지 않도록 링크를 숨겼으나, 백엔드에서도 반드시 보호처리를 해야한다.
   if((String)(video.owner) !== (String)(_id)){
+    req.flash("error","Not authorized");
     return res.status(403).redirect("/"); // 403 : 권한x
   }
 
@@ -101,6 +103,7 @@ export const postEdit  = async(req,res)=>{
     description,
     hashtags  : Video.formatHashtags(hashtags),
   });
+  req.flash("success","success");
   return res.redirect(`/videos/${id}`);
 };
 
@@ -114,13 +117,14 @@ export const postUpload = async(req,res)=> {
       session : {
         user: {_id}}
        } = req;
-  const { path: fileUrl }  = req.file; // multer는 req.file을 제공해주는데 file에는 path가 있다.
+  const { video, thumb }  = req.files; // multer는 req.file을 제공해주는데 file에는 path가 있다.
   const {title,description,hashtags} = req.body;
   // await에서는 에러가 나면 자바스크립트는 멈춰버린다. 따라서 에러를 대비해서 try~catch문을 써준다.
   try{
     const newVideo = await Video.create({
       title,
-      fileUrl,
+      fileUrl: video[0].path,
+      thumbUrl : thumb[0].path,
       description,
       hashtags: Video.formatHashtags(hashtags),
       owner: _id, // 업로드하는 사람의 id를 등록해준다.
@@ -129,6 +133,7 @@ export const postUpload = async(req,res)=> {
       user.videos.push(newVideo._id); // 한명의 user는 여러개의 video를 가질 수 있다. 업로드할때마다 이렇게 추가해준다.
       user.save(); // 이렇게 user.save()하면 문제점 : 매번 비디오 올릴때마다 password hashing middleware가 발동해서 유저가 로그인을 실패하게된다.
       //-> 버그 해결책 : password가 변경되었을때만 middleware가 작동하도록 수정한다. 
+      req.flash("success","success");
       return res.redirect("/");
     }catch(error){
     return res.render("upload",{
@@ -152,6 +157,7 @@ export const deleteVideo = async (req, res) => {
     return res.render(403);
   } 
   await Video.findByIdAndDelete(id);
+  req.flash("success","success");
   return res.redirect("/");
 };
 
@@ -173,7 +179,7 @@ export const registerView = async(req,res) => {
   const {id} = req.params;
   const video = await Video.findById(id);
   if(!video){  
-    return res.sendStatus(404);
+    return res.sendStatus(404); // return res.status(404) 만 하면 무한로딩 한다. sendStatus해야 넘어간다.
   }
   video.meta.views = video.meta.views + 1;
   await video.save();
