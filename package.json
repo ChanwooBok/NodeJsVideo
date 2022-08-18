@@ -17,6 +17,8 @@
   },
   "homepage": "https://github.com/ChanwooBok/NodeJsVideo#readme",
   "dependencies": {
+    "@ffmpeg/core": "^0.11.0",
+    "@ffmpeg/ffmpeg": "^0.11.0",
     "bcrypt": "^5.0.1",
     "connect-mongo": "^4.6.0",
     "dotenv": "^16.0.0",
