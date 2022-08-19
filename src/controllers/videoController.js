@@ -158,6 +158,7 @@ export const deleteVideo = async (req, res) => {
   } 
   await Video.findByIdAndDelete(id);
   req.flash("success","success");
+  console.log("삭제되었네?ㅋ");
   return res.redirect("/");
 };
 
@@ -185,4 +186,12 @@ export const registerView = async(req,res) => {
   await video.save();
   return res.sendStatus(200);
   
+}
+
+export const createComment = (req,res)=>{
+  console.log(req.params);
+  console.log(req.body.text);
+  console.log(req.body.rating);
+  
+  return res.end();
 }

@@ -26,9 +26,9 @@ app.use((req, res, next) => {
 app.set("view engine","pug");
 app.set("views",process.cwd()+"/src/views");
 app.use(logger);
-app.use(express.urlencoded({ extended : true }));
-
-
+app.use(express.urlencoded({ extended : true })); // view파일의 form 으로부터 오는 이미지파일,비디오등을 백엔드에서 req.body로 받아 올 수 있게해줌.
+// app.use(express.text());
+app.use(express.json());  // 프론트엔드에서 string을 받아서 js의 object로 바꾸어준다.
 
 app.use( 
     session( {

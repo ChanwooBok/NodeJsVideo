@@ -2,11 +2,14 @@ const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 //css를 javascript파일과 분리시켜주는 기능 , css변화시마다 js로딩 기다리기 싫어서 설치
 const path = require("path");
 
+const BASE_JS = "./src/client/js/";
+
 module.exports = {
   entry: {
-    main:"./src/client/js/main.js",
-    videoPlayer:"./src/client/js/videoPlayer.js",
-    recorder:"./src/client/js/recorder.js",
+    main:BASE_JS+"main.js",
+    videoPlayer:BASE_JS+"videoPlayer.js",
+    recorder:BASE_JS+"recorder.js",
+    commentSection:BASE_JS+"commentSection.js",
     //밑에서 filename을 js/[name].js로 설정해서 name안에 각 항목이 들어간다.
   },
   mode: "development", // 개발모드
