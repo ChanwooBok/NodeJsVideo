@@ -1,6 +1,6 @@
 import "./db";
 import "./models/Video";
-import express, { response } from "express";
+import express from "express";
 import flash from 'express-flash';
 import morgan from "morgan";
 import session from "express-session";
@@ -8,8 +8,8 @@ import MongoStore from "connect-mongo";
 import rootRouter from "./routers/rootRouter.js";
 import userRouter from "./routers/userRouter.js";
 import videoRouter from "./routers/videoRouter.js";
-import { localsMiddleware } from "./middlewares";
 import apiRouter from './routers/apiRouter';
+import { localsMiddleware } from "./middlewares";
 //const express = require("express");    옛날 문법. 바벨을 씀으로써 위와같이 쓸 수 있다.
 
 

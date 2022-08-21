@@ -7,6 +7,8 @@ let stream;
 let recorder;
 let videoFile;
 
+
+
 const files = {
     input: "recording.webm",
     output: "output.mp4",

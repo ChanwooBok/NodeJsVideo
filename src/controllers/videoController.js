@@ -1,5 +1,6 @@
 import Video from "../models/Video";
 import User from "../models/User";
+import Comment from "../models/Comment";
 import { reset } from 'nodemon';
  // callback function : 해당 함수를 제일 마지막에 실행시키도록 해준다. ( 코드의 가독성 떨어진다.) 
   // promise : async await  를 이용해서 javascript 가 await코드를 기다려준다. 순서대로 코드작동 ( 코드의 가독성 굿)
@@ -48,7 +49,9 @@ export const watch = async(req, res) => {
   //const video = await Video.findById(id);
   //const video = await Video.findById(id);
   //const user = await User.findById(id); // video에 user의 _id를 owner로 저장함으로써 쉽게 owner를 찾을 수 있다.
-  const video = await Video.findById(id).populate("owner");  // 몽구스가 owner의 _id가 schema모델 User와 ref된것을 알고 알아서 _id로 된 user의 정보까지 싸그리 가져온다.
+  const video = await Video.findById(id).populate("owner").populate("comments");  // 몽구스가 owner의 _id가 schema모델 User와 ref된것을 알고 알아서 _id로 된 user의 정보까지 싸그리 가져온다.
+  
+  
   if(!video){
     return res.status(404).render("404", {pageTitle: "Video Not Found"});
   }
@@ -62,6 +65,7 @@ export const getEdit = async(req,res)=> {
 
   const { id } = req.params; // watch.pug에서 edit누를때 video.id로 비디오의 id를 인자로 보내준다.
   const video = await Video.findById(id); //video object가 필요하므로, mongoose의 기능인 findById를 써준다. exists쓰면 안된다. 
+  
   if(!video){
     return res.render("404", {pageTitle: "Video Not Found"});
   }//만약,url로 온 id로 비디오를 찾았는데 없다면 무한로딩되므로,  if문으로 에러처리를 해준다.
@@ -71,7 +75,7 @@ export const getEdit = async(req,res)=> {
     req.flash("error","Not authorized");
     return res.status(403).redirect("/"); // 403 : 권한x
   }
-
+  
   return res.render("edit", { pageTitle: `Edit: ${video.title}`, video });
 };
 
@@ -187,11 +191,29 @@ export const registerView = async(req,res) => {
   return res.sendStatus(200);
   
 }
+export const createComment = async(req, res) => {
+  const {
+    session: { user },
+    body: { text },
+    params: { id },
+  } = req;
+  const video = await Video.findById(id);
+  if (!video) {
+    return res.sendStatus(404);
+  }
+  const comment = await Comment.create({
+    text,
+    owner: user._id,
+    video: id,
+  });
+  video.comments.push(comment._id);
+  video.save();
+  return res.status(201).json({newCommentId : comment._id});
+};
 
-export const createComment = (req,res)=>{
-  console.log(req.params);
-  console.log(req.body.text);
-  console.log(req.body.rating);
-  
-  return res.end();
+export const deleteComment = async(req,res) => {
+  const { params : {id} }  = req;
+  const commentDelete = await Comment.deleteOne({_id :id });
+  return res.sendStatus(201);
 }
+
