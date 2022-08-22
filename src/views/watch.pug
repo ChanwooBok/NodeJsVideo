@@ -34,15 +34,23 @@ block content
                 form.video__comment-form#commentForm 
                     textarea(cols="30", rows= "10" , placeholder="give it a shot.. show me what you got")
                     button Add Comment Give it a shot 
-
     div.video__comments
         ul
             each comment in video.comments
                 li.video__comment(data-id=comment.id)
                     i.fas.fa-comment
-                    span  #{comment.text}  #{comment.id}  #{loggedInUser._id}
+                    span  #{comment.text}
+            each comment in comments
+                if String(comment.owner) === String(loggedInUser._id)
+                    a(href=`/api/comments/${comment._id}/delete`).edit-btn X
+                    //- 도대체가 apiRouter하고 연결이 아예 안된다. 뭐가 문제지..?
+            //- if String(comments.owner._id) === String(loggedInUser._id)
+            //-     div.comment-edit
+            //-         a(href=`/api/comments/${comment._id}/delete`).edit-btn X
                     
-
+                                
+            //- if String(comments.owner._id) === String(loggedInUser._id)
+            //-         a(href=`${video.id}/edit`) Edit Video &rarr;
               
                     
 
