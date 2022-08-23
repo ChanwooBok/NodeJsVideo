@@ -3,59 +3,33 @@ import "regenerator-runtime";
 const videoContainer = document.getElementById("videoContainer");
 const form = document.getElementById("commentForm");
 
+let deleteBtns = document.querySelectorAll("#deleteBtn");
 
 
-// const addComment = (text) => {
-//     const videoComments = document.querySelector(".video__comments ul");
-//     const newComment = document.createElement("li");
-//     newComment.className = "video__comment";
-//     const icon = document.createElement("i");
-//     icon.className = "fas fa-comment";
-//     const span = document.createElement("span");
-//     span.innerText = ` ${text}`;
-//     newComment.appendChild(icon);
-//     newComment.appendChild(span);
-//     videoComments.prepend(newComment);
-//   };
-
-const addComment = (text,id) => {
+const addComment = (text,commentId) => {
+    
     const videoComments = document.querySelector(".video__comments ul");
     const newComment = document.createElement("li");
-    newComment.dataset.id = id;
+    newComment.dataset.id = commentId;
     newComment.className = "video__comment";
     const icon  = document.createElement("i");
     icon.className = "fas fa-comment";
-    const span = document.createElement("span");
-    span.innerText = `${text}`;
-    const a = document.createElement("a");
-    a.innerText = "❌";
+    const textspan = document.createElement("span");
+    textspan.innerText = `${text}`;
+
+    const deleteSpan = document.createElement("span");
+    deleteSpan.innerText = "🗑";
+    deleteSpan.id ="deleteBtn";
+    deleteSpan.className = "video__comment__deleteBtn";
+    deleteSpan.addEventListener("click",handleDelete);
+
+
     newComment.appendChild(icon);
-    newComment.appendChild(span);
-    
-
-    //delete btn
-    a.href= `/api/videos/${id}/delete`;
-
-
-    newComment.appendChild(a);
+    newComment.appendChild(textspan);
+    newComment.appendChild(deleteSpan);
     videoComments.prepend(newComment);
 
-    const handleDelete = async() => {
-        const commentId = newComment.dataset.id;
-        
-        const response = await fetch(`/api/videos/${commentId}/delete`, {
-             method:"POST",
-        });
-        if(response.status == 201){
-            console.log(response.status);
-            videoComments.removeChild(newComment);
-            console.log("제거완료");
-        }
-    }
-
-    a.addEventListener("click",handleDelete);
-
-}
+};
 
 const handleSubmit = async(event) => {
     
@@ -63,6 +37,9 @@ const handleSubmit = async(event) => {
     const textarea = form.querySelector("textarea");
     const text= textarea.value;
     const videoId = videoContainer.dataset.id;
+    if(text ===""){
+        return;
+    }
     //페이지를 바꾸지않고 실시간으로 코멘트를 달고 싶으므로 fetch쓴다.
     const response = await fetch(`/api/videos/${videoId}/comment`,{
         method:"POST",
@@ -79,6 +56,20 @@ const handleSubmit = async(event) => {
     textarea.value = ""; // 마지막엔 코멘트창 꺠끗이 비워주기.
    
 };
+
+const handleDelete = async(event)=> {
+    const li = event.target.parentElement;
+    const videoId = videoContainer.dataset.id;
+    const {dataset : { id : commentId }} = li;
+    li.remove();
+    // await fetch(`/api/comments/${commentId}/${videoId}/delete`,{
+    //     method:"DELETE",
+    // });   ---> videoId 까지 넘겨서 await Comment.find( { video : id }) 로 코멘트를 찾아보려고 했으나, params으로 받는 id는 후자 변수뿐이었음.
+    await fetch(`/api/comments/${commentId}/delete`, {
+        method:"DELETE",    
+    });
+    console.log("완료");
+}
 
 if (form) {
     form.addEventListener("submit", handleSubmit);

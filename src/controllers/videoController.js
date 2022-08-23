@@ -42,28 +42,16 @@ export const home = async(req,res) => {
 //   });
 // }
 
-export const watch = async(req, res) => {
 
-  const { id } = req.params; // const id = req.param.id : video를 올릴 사람의 id
-  const {session : {user : {_id}}} = req;
-  //const video = await Video.findById(id);
-  //const video = await Video.findById(id);
-  //const user = await User.findById(id); // video에 user의 _id를 owner로 저장함으로써 쉽게 owner를 찾을 수 있다.
-  const video = await Video.findById(id).populate("owner").populate("comments");  // 몽구스가 owner의 _id가 schema모델 User와 ref된것을 알고 알아서 _id로 된 user의 정보까지 싸그리 가져온다.
-  const owner = await User.findById(_id);
-  const comments = await Comment.find({ video: id });
-  console.log(comments);
-  console.log(_id);
+export const watch = async (req, res) => {
+    const { id } = req.params;
+    const video = await Video.findById(id).populate("owner").populate("comments");
+    if (!video) {
+      return res.status(404).render("404", { pageTitle: "Not found" });
+    }
+    return res.render("watch", { pageTitle: video.title, video });
+  };
   
-  
-
-  if(!video){
-    return res.status(404).render("404", {pageTitle: "Video Not Found"});
-  }
-  return res.render("watch", { pageTitle: video.title ,video ,owner, comments }); // owner를 pug template에 보내서 쓸 수 있도록 한다.
-};
-// 도대체 왜 COMMENTS를 pug로 보내는데 받질 못할까?
- 
 export const getEdit = async(req,res)=> {
   const {
       session : { 
@@ -217,9 +205,40 @@ export const createComment = async(req, res) => {
   return res.status(201).json({newCommentId : comment._id});
 };
 
-export const deleteComment = (req,res) => {
-  console.log("삭제페이지진입");
+export const deleteComment = async(req,res) => {
+  const {
+    params : { id : commentId }
+  }  = req;
+  const {
+    session: { 
+      user : { _id : userId},
+    },
+  } = req;
+  const comment = await Comment.findById(commentId)
+    .populate("owner")
+    .populate("video"); // findById로 찾으면 comment의 _id로 찾아준다.
+  //const comment = await Comment.find( { video : id }) // 불가능하네
+  console.log(comment);
+  const video = comment.video;
+  const user = await User.findById(userId);
+
+  if( String(userId) !== String(comment.owner._id)){
+    console.log("소유주가 다르네");
+    return res.sendStatus(404);
+  }
+  console.log("소유주가 같습니다.");
   
-  return res.redirect("/");
+  if (!video) {
+    return res.sendStatus(404);
+  }
+  
+//댓글 삭제, 비디오에서 댓글 배열 삭제, 유저에서 댓글 배열 삭제
+user.comments.splice(user.comments.indexOf(commentId), 1);
+await user.save();
+video.comments.splice(video.comments.indexOf(commentId), 1);
+await video.save();
+await Comment.findByIdAndRemove(commentId);
+
+  return res.end();
 }
 

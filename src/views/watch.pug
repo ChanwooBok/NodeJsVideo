@@ -40,9 +40,11 @@ block content
                 li.video__comment(data-id=comment.id)
                     i.fas.fa-comment
                     span  #{comment.text}
-            each comment in comments
-                if String(comment.owner) === String(loggedInUser._id)
-                    a(href=`/api/comments/${comment._id}/delete`).edit-btn X
+                    if String(comment.owner) === String(loggedInUser._id) 
+                        span.video__comment-delete#deleteCommentBtn(data-id=comment._id)(data-videoId=video._id) ❌
+            //- each comment in comments
+                //- if String(comment.owner) === String(loggedInUser._id)
+                //-     a(href=`/api/comments/${comment._id}/delete`).edit-btn X
                     //- 도대체가 apiRouter하고 연결이 아예 안된다. 뭐가 문제지..?
             //- if String(comments.owner._id) === String(loggedInUser._id)
             //-     div.comment-edit
