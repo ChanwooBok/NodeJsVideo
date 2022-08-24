@@ -69,7 +69,7 @@ const handleDelete = async(event)=> {
     await fetch(`/api/comments/${commentId}/delete`, {
         method:"DELETE",    
     });
-    console.log("완료");
+    
 }
 
 if (form) {

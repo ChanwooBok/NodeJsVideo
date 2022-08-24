@@ -12,8 +12,8 @@ module.exports = {
     commentSection:BASE_JS+"commentSection.js",
     //밑에서 filename을 js/[name].js로 설정해서 name안에 각 항목이 들어간다.
   },
-  mode: "development", // 개발모드
-  watch: true, // 새로 저장 할 때 마다 새롭게 바로 업데이트
+  // mode: development
+  //watch: true, // 새로 저장 할 때 마다 새롭게 바로 업데이트 -> command로 package.json script에다가 추가해주었다. 개발모드시에만 사용하고싶은 설정이므로.
   plugins: [
     new MiniCssExtractPlugin({
       filename: "css/styles.css",

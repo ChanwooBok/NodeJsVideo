@@ -84,7 +84,7 @@ export const postEdit  = async(req,res)=>{
   //exists( __ : __ ) 는 true ,false 의 불리언값을 전달한다. 여기선 비디오가 존재하는지만 체크하는거니까(에러방지용) video object는 필요없어서 exists로
   //간단하게 체크해준다. exist()는 filter를 필요로 하며 any propeties of video can be filter
   const video = await Video.exists( { _id : id });
-  console.log(id+"는 비디오 고유 아이디입니다.");
+  
   if(!video){
     return res.status(404).render("404", {pageTitle: "Video Not Found"});
   }
@@ -235,17 +235,18 @@ export const deleteComment = async(req,res) => {
   const user = await User.findById(userId);
 
   if( String(userId) !== String(comment.owner._id)){
-    console.log("소유주가 다르네");
+    
     return res.sendStatus(404);
   }
-  console.log("소유주가 같습니다.");
+  
   
   if (!video) {
     return res.sendStatus(404);
   }
-  console.log("comment : "+comment);
-  console.log("comment.video : "+video);
-  console.log(user); // comments : []로 나온다. 댓글을 생성할 때 user로 푸쉬를 안해주는듯. -> 해결완료.
+  // console.log("comment : "+comment);
+  // console.log("comment.video : "+video);
+  //console.log(user); // comments : []로 나온다. 댓글을 생성할 때 user로 푸쉬를 안해주는듯. -> 해결완료.
+
 //댓글 삭제, 비디오에서 댓글 배열 삭제, 유저에서 댓글 배열 삭제
 user.comments.splice(user.comments.indexOf(commentId), 1);
 await user.save();
