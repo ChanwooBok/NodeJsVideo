@@ -11,7 +11,7 @@ import app from "./server";
 // server.js에서 서버를 초기화하지 않기떄문에 package.json에서 init.js를 지켜보도록 설정을 바꿔야한다.
 
 
-const PORT = 4000;
+const PORT =  process.env.PORT || 4000; // heroku는 $PORT 변수를 매번 주기떄문에 이렇게 설정한다. localhost일때는 4000으로 하는거루..
 
 const handleListening =  () => 
 console.log(`✅✨Server Listening on port http://localhost:${PORT}🚀`);
