@@ -6,6 +6,7 @@ const form = document.getElementById("commentForm");
 let deleteBtns = document.querySelectorAll("#deleteBtn");
 
 
+
 const addComment = (text,commentId) => {
     
     const videoComments = document.querySelector(".video__comments ul");
@@ -74,4 +75,9 @@ const handleDelete = async(event)=> {
 if (form) {
     form.addEventListener("submit", handleSubmit);
   }
-   
+
+if (deleteBtns) {
+    deleteBtns.forEach((deleteBtn) => {
+      deleteBtn.addEventListener("click", handleDelete);
+    });
+  }

@@ -44,8 +44,8 @@ export const home = async(req,res) => {
 
 
 export const watch = async (req, res) => {
-    const { id } = req.params;
-    const video = await Video.findById(id).populate("owner").populate("comments");
+  const { id } = req.params; // 해당 비디오의 id
+  const video = await Video.findById(id).populate("owner").populate("comments");
     if (!video) {
       return res.status(404).render("404", { pageTitle: "Not found" });
     }
@@ -148,15 +148,19 @@ export const deleteVideo = async (req, res) => {
   const { id } = req.params;
 
   const video = await Video.findById(id);
+  const user = await User.findById(_id);
+
   if(!video){
     return res.status(400).render("404",{pageTitle : "Video not Found"});
   }
   if((String)(video.owner) !== (String)(_id)){
     return res.render(403);
   } 
-  await Video.findByIdAndDelete(id);
+  await Video.findByIdAndDelete(id); 
+  //user에서는 비디오를 안 지워주고 있었다.. 실수
+  user.videos.splice(user.videos.indexOf(id), 1);
+  user.save();
   req.flash("success","success");
-  console.log("삭제되었네?ㅋ");
   return res.redirect("/");
 };
 
@@ -187,21 +191,29 @@ export const registerView = async(req,res) => {
 }
 export const createComment = async(req, res) => {
   const {
-    session: { user },
+    session: { user : {_id} },
     body: { text },
     params: { id },
   } = req;
   const video = await Video.findById(id);
+  const user = await User.findById(_id);
+
   if (!video) {
     return res.sendStatus(404);
   }
   const comment = await Comment.create({
     text,
-    owner: user._id,
+    owner: user,
     video: id,
   });
+  //video모델에 comments넣어주기
   video.comments.push(comment._id);
-  video.save();
+  await video.save();
+  //user모델에 comments넣어주기  
+  user.comments.push(comment._id);
+  await user.save();
+
+  
   return res.status(201).json({newCommentId : comment._id});
 };
 
@@ -218,7 +230,7 @@ export const deleteComment = async(req,res) => {
     .populate("owner")
     .populate("video"); // findById로 찾으면 comment의 _id로 찾아준다.
   //const comment = await Comment.find( { video : id }) // 불가능하네
-  console.log(comment);
+  
   const video = comment.video;
   const user = await User.findById(userId);
 
@@ -231,7 +243,9 @@ export const deleteComment = async(req,res) => {
   if (!video) {
     return res.sendStatus(404);
   }
-  
+  console.log("comment : "+comment);
+  console.log("comment.video : "+video);
+  console.log(user); // comments : []로 나온다. 댓글을 생성할 때 user로 푸쉬를 안해주는듯. -> 해결완료.
 //댓글 삭제, 비디오에서 댓글 배열 삭제, 유저에서 댓글 배열 삭제
 user.comments.splice(user.comments.indexOf(commentId), 1);
 await user.save();
