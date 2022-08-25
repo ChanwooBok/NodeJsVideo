@@ -44,6 +44,7 @@ export const home = async(req,res) => {
 
 
 export const watch = async (req, res) => {
+  console.log(process.env.NODE_ENV);
   const { id } = req.params; // 해당 비디오의 id
   const video = await Video.findById(id).populate("owner").populate("comments");
     if (!video) {

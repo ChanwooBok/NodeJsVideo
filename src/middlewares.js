@@ -11,9 +11,15 @@ const s3 = new aws.S3({
     }
 });
 
-const multerUploader = multerS3({
+const s3ImageUpload = multerS3({
     s3:s3,
-    bucket:"healthips",
+    bucket:"healthips/images",
+    acl:"public-read",
+});
+
+const s3VideoUploader = multerS3({
+    s3:s3,
+    bucket:"healthips/videos",
     acl:"public-read",
 });
 
@@ -52,7 +58,7 @@ export const avatarUpload = multer({
     limits: {
         fileSize: 3000000,
     },
-    storage:multerUploader,
+    storage:s3ImageUpload,
 });
 
 export const videoUpload = multer({
@@ -60,5 +66,5 @@ export const videoUpload = multer({
     limits: {
       fileSize: 1000000000,
     },
-    storage:multerUploader,
+    storage:s3VideoUploader,
   });
