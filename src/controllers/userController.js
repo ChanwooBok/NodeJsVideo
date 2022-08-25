@@ -57,7 +57,7 @@ export const postEdit = async(req,res) =>{
             file,
          } = req;
     // const id = req.session.user.id; 와 같은 표현
-    console.log(file);
+    console.log(file.location);
     const updatedUser = await User.findByIdAndUpdate(
         _id,
         {
