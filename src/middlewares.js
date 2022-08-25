@@ -1,5 +1,21 @@
 import multer from "multer";
+import multerS3 from "multer-s3";
+import aws from "aws-sdk";
 
+
+//s3 object를 만들기 : https://www.npmjs.com/package/multer-s3 링크 참조 하여 object 생성.
+const s3 = new aws.S3({
+    credentials : {
+        accessKeyId : process.env.AWS_ID,
+        secretAccessKey : process.env.AWS_SECRET
+    }
+});
+
+const multerUploader = multerS3({
+    s3:s3,
+    bucket:"healthips",
+    acl:"public-read",
+});
 
 export const localsMiddleware = (req,res,next) => {
     
@@ -31,11 +47,18 @@ export const publicOnlyMiddleware = (req,res,next) => {
 
 
 // // 사용자가 저장한 프로필 사진 파일을 uplaods/avatar라는 폴더에 저장하도록 하는 미들웨어.
-export const avatarUpload = multer({ dest: "uploads/avatars" });
+export const avatarUpload = multer({ 
+    dest: "uploads/avatars",
+    limits: {
+        fileSize: 3000000,
+    },
+    storage:multerUploader,
+});
 
 export const videoUpload = multer({
     dest: "uploads/videos/",
     limits: {
       fileSize: 1000000000,
     },
+    storage:multerUploader,
   });
