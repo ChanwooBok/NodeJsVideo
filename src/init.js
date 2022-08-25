@@ -15,6 +15,6 @@ const PORT =  process.env.PORT || 4000; // heroku는 $PORT 변수를 매번 주�
 
 const handleListening =  () => 
 console.log(`✅✨Server Listening on port http://localhost:${PORT}🚀`);
-console.log(process.env.NODE_ENV);
+
 
 app.listen(PORT , handleListening);

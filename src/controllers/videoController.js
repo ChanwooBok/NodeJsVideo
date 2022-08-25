@@ -44,7 +44,7 @@ export const home = async(req,res) => {
 
 
 export const watch = async (req, res) => {
-  console.log(process.env.NODE_ENV);
+  
   const { id } = req.params; // 해당 비디오의 id
   const video = await Video.findById(id).populate("owner").populate("comments");
     if (!video) {
@@ -119,11 +119,12 @@ export const postUpload = async(req,res)=> {
   const { video, thumb }  = req.files; // multer는 req.file을 제공해주는데 file에는 path가 있다.
   const {title,description,hashtags} = req.body;
   // await에서는 에러가 나면 자바스크립트는 멈춰버린다. 따라서 에러를 대비해서 try~catch문을 써준다.
+  const isHeroku = process.env.NODE_ENV === "production";
   try{
     const newVideo = await Video.create({
       title,
-      fileUrl: video[0].location,
-      thumbUrl : thumb[0].location,
+      fileUrl: isHeroku ? video[0].location : video[0].path,
+      thumbUrl : isHeroku ? thumb[0].location : thumb[0].path,
       description,
       hashtags: Video.formatHashtags(hashtags),
       owner: _id, // 업로드하는 사람의 id를 등록해준다.

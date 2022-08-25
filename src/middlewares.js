@@ -2,6 +2,7 @@ import multer from "multer";
 import multerS3 from "multer-s3";
 import aws from "aws-sdk";
 
+const isHeroku = process.env.NODE_ENV === "production";
 
 //s3 object를 만들기 : https://www.npmjs.com/package/multer-s3 링크 참조 하여 object 생성.
 const s3 = new aws.S3({
@@ -58,13 +59,13 @@ export const avatarUpload = multer({
     limits: {
         fileSize: 3000000,
     },
-    storage:s3ImageUpload,
+    storage:isHeroku ? s3ImageUpload : undefined,
 });
 
 export const videoUpload = multer({
     dest: "uploads/videos/",
-    limits: {
+    limits: {   
       fileSize: 1000000000,
     },
-    storage:s3VideoUploader,
+    storage:isHeroku ? s3VideoUploader : undefined,
   });
