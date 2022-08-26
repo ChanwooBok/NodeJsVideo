@@ -61,7 +61,7 @@ export const postEdit = async(req,res) =>{
     const isHeroku = process.env.NODE_ENV === "production";
     console.log(isHeroku);
     if(isHeroku){
-        return res.redirect("/");
+        return res.render("upload");
     }
     const updatedUser = await User.findByIdAndUpdate(
         _id,
