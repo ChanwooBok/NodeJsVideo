@@ -59,14 +59,13 @@ export const postEdit = async(req,res) =>{
     // const id = req.session.user.id; 와 같은 표현
     //console.log(file); multer s3를 시용할때는, File.location ,사용 안 할땐, File.path
     const isHeroku = process.env.NODE_ENV === "production";
-    console.log(isHeroku);
-    if(isHeroku){
-        return res.render("upload");
-    }
+    // if(isHeroku){
+    //     return res.render("upload");
+    // }
     const updatedUser = await User.findByIdAndUpdate(
         _id,
         {
-          avatarUrl : file ?  file.location : avatarUrl ,
+          avatarUrl : file ?  ( isHeroku ? file.location : file.path ) : avatarUrl ,
           name,
           email,
           username,
